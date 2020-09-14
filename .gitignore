@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------
+# .gitinogreに関するTips
+# 
+# あとからまとめて.gitignoreする方法
+# https://qiita.com/yuuAn/items/b1d1df2e810fd6b92574
+#
+# .gitignore ファイルをブランチごとに別の内容にする
+# https://qiita.com/matsuoshi/items/f40d60a5c0a1a169a73b
+# ---------------------------------------------------------------
+
+# ドットはじまり
+\!*
+.*
+!.htaccess
+!.htpasswd
+!.gitkeep
+!.gitignore
+!.gitmodules
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Other
+ssl
+~
+.DS_Store
+*.log
+コピー
+.AppleDouble
+.smbdelete
+
+docker-compose.d/*
+!docker-compose.d/.gitkeep
+
+docker/4_mysql57/mysql/*
+!docker/4_mysql57/mysql/.gitkeep
+docker/4_mysql80/mysql/*
+!docker/4_mysql80/mysql/.gitkeep
+
+docker/5_phpmyadmin1/sessions/*
+!docker/5_phpmyadmin1/sessions/.gitkeep
+docker/5_phpmyadmin2/sessions/*
+!docker/5_phpmyadmin2/sessions/.gitkeep
+
+docker/4_mysql57/tmp/*
+!docker/4_mysql57/tmp/.gitkeep
+docker/4_mysql80/tmp/*
+!docker/4_mysql80/tmp/.gitkeep
