@@ -1,0 +1,127 @@
+# 参考URL
+# https://webnaut.jp/technology/20170126-1990/
+
+version: '2'
+services:
+
+#NGINX proxy
+  proxy:
+    image: traskit/nginx-proxy
+    privileged: true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./docker-compose.d/certs:/etc/nginx/certs:ro
+      - /etc/nginx/vhost.d
+      - /usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./docker/1_nginx/server.conf:/etc/nginx/conf.d/server.conf
+    container_name: proxy
+
+#SSL letsencrypt-proxy
+  letsencrypt-proxy:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    privileged: true
+    volumes:
+      - ./docker-compose.d/certs:/etc/nginx/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    volumes_from:
+      - proxy
+    container_name: letsencrypt-proxy
+
+#DB mysql
+  mysql57:
+    #image: mysql:5.7
+    image: mariadb
+    volumes:
+      - "./docker/4_mysql57/conf:/etc/mysql/conf.d"
+      - "./docker/4_mysql57/mysql:/var/lib/mysql"
+      - "./docker/4_mysql57/sql:/docker-entrypoint-initdb.d"
+      - "./docker/4_mysql57/tmp:/var/tmp"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - 3306:3306
+    container_name: mysql57
+
+#phpMyAdmin phpmyadmin1
+#http://localhost:9000でアクセスできる
+  phpmyadmin1:
+    build: ./docker/5_phpmyadmin1
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql57
+      - PMA_USER=root
+      - PMA_PASSWORD=password
+    links:
+      - mysql57:mysql
+    ports:
+      - 9000:80
+    volumes:
+      - "./docker/5_phpmyadmin1/sessions:/sessions"
+    container_name: phpmyadmin1
+
+#PHP5.3 php53
+  php53:
+    build: ./docker/3_apache/1_php53
+    volumes:
+        - ../volumes:/var/www
+    environment:
+      VIRTUAL_HOST: "*.example.php53"
+      CERT_NAME: default
+      HTTPS_METHOD: noredirect
+    links:
+      - mysql57
+      - mailhog
+    container_name: php53
+
+#PHP5.6 php56
+  php56:
+    build: ./docker/3_apache/2_php56
+    volumes:
+        - ../volumes:/var/www/
+    environment:
+      VIRTUAL_HOST: "*.example.php56"
+      CERT_NAME: default
+      HTTPS_METHOD: noredirect
+    links:
+      - mysql57
+      - mailhog
+    container_name: php56
+
+#PHP7.2 php72
+  php72:
+    build: ./docker/3_apache/3_php72
+    volumes:
+        - ../volumes:/var/www
+    environment:
+      VIRTUAL_HOST: "*.example.php72"
+      CERT_NAME: default
+      HTTPS_METHOD: noredirect
+    links:
+      - mysql57
+      - mailhog
+    container_name: php72
+
+#PHP7.4 php74
+  php74:
+    build: ./docker/3_apache/4_php74
+    volumes:
+        - ../volumes:/var/www
+    environment:
+      VIRTUAL_HOST: "*.example.php74"
+      CERT_NAME: default
+      HTTPS_METHOD: noredirect
+    links:
+      - mysql57
+      - mailhog
+    container_name: php74
+
+#Mailhog mailhog
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    container_name: mailhog
