@@ -1,6 +1,6 @@
 FROM php:7.4-apache
 
-RUN apt-get update
+RUN apt-get update && apt-get install -y gnupg2
 RUN apt-get -y install less libicu-dev default-mysql-client libpq-dev \
     libfreetype6-dev libjpeg62-turbo-dev libpng-dev libwebp-dev \
     libxpm-dev wget libmagickwand-dev vim iputils-ping net-tools
@@ -11,39 +11,42 @@ RUN docker-php-ext-configure gd \
         #--with-gd \
         --with-xpm \
         --with-webp
-RUN docker-php-ext-install pdo_mysql mysqli pdo_pgsql pgsql intl gd
+RUN docker-php-ext-install pdo_mysql mysqli pdo_pgsql pgsql intl gd exif
 
 # locale
 RUN apt-get install -y locales \
   && echo "ja_JP UTF-8" >> /etc/locale.gen \
+  && echo "ja_JP Shift_JIS" >> /etc/locale.gen \
   && locale-gen
 
 #おそらく足りていないモジュール
-#exif
 #gettext
 #igbinary
 #mcrypt
 #redis
 #shmop
 #sockets
-#    sodium
+#sodium
 #sysvmsg
 #sysvsem
 #sysvshm
 #wddx
 #xsl
 
+# xdebug
+COPY ./xdebug-3.1.6/ /tmp/xdebug-3.1.6/
+RUN cd /tmp/xdebug-3.1.6/ && phpize && ./configure --enable-xdebug && make && make install
+
 # imagick
-RUN pecl install imagick
+COPY ./imagick-3.7.0/ /tmp/imagick-3.7.0/
+RUN cd /tmp/imagick-3.7.0/ && phpize && ./configure --enable-imagick && make && make install
 COPY ./imagick.ini /usr/local/etc/php/conf.d/
 
-# xdebug
-RUN pecl install xdebug
-
 # memcached
-RUN apt-get -y install libz-dev libmemcached-dev libmemcached11 libmemcachedutil2 build-essential \
-&& pecl install memcached \
-&& echo extension=memcached.so >> /usr/local/etc/php/conf.d/memcached.ini
+RUN apt-get -y install libz-dev libmemcached-dev libmemcached11 libmemcachedutil2 build-essential
+COPY ./memcached-3.2.0/ /tmp/memcached-3.2.0/
+RUN cd /tmp/memcached-3.2.0/ && phpize && ./configure --enable-memcached && make && make install
+RUN echo extension=memcached.so >> /usr/local/etc/php/conf.d/memcached.ini
 
 # git
 RUN apt-get install -y git

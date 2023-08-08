@@ -5,6 +5,11 @@ FROM ubuntu:12.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Ubuntu アップデート時、リポジトリアクセスで 404 が大量に出て更新できない場合の解消方法
+# https://qiita.com/ytyng/items/76784390a538bbb5117e
+RUN sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+RUN apt-get update
+
 # PHP 5.3 + Apache で必要なパッケージをインストール
 RUN apt-get -qq update \
     && apt-get install -y -qq --no-install-recommends \
@@ -21,13 +26,14 @@ RUN chmod +x /usr/local/bin/run
 # locale
 RUN apt-get install -y locales \
   && echo "ja_JP UTF-8" >> /etc/locale.gen \
+  && echo "ja_JP Shift_JIS" >> /etc/locale.gen \
   && locale-gen
 
 # xdebug
 RUN pecl install xdebug-2.2.7
 
 # imagick
-RUN apt-get install -y php5-imagick libmagickwand-dev libmagickcore-dev
+RUN apt-get install -y php5-imagick libmagickcore-dev libmagickwand-dev
 
 # memcached
 RUN apt-get install -y php5-memcached

@@ -117,6 +117,35 @@ services:
       - mailhog
     container_name: php74
 
+##PHP8.1 php81
+  php81:
+    build: ./docker/3_apache/5_php81
+    volumes:
+        - ../volumes:/var/www
+    environment:
+      VIRTUAL_HOST: "*.example.php81"
+      CERT_NAME: default
+      HTTPS_METHOD: noredirect
+    links:
+      - mysql57
+      - mailhog
+    container_name: php81
+
+#PHP8.2 php82
+  php82:
+    build: ./docker/3_apache/5_php82
+    volumes:
+        - ../volumes:/var/www
+    environment:
+      VIRTUAL_HOST: "*.example.php82"
+      CERT_NAME: default
+      HTTPS_METHOD: noredirect
+    links:
+      - mysql57
+      - mailhog
+    container_name: php82
+
+
 #Mailhog mailhog
   mailhog:
     image: mailhog/mailhog

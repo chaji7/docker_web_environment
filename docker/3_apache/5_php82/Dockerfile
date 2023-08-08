@@ -1,19 +1,17 @@
-FROM php:5.6-apache
+FROM php:8.2-apache
 
-RUN echo "deb http://archive.debian.org/debian/ stretch main" > /etc/apt/sources.list \
-    && echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list \
-    && apt-get update
-RUN apt-get -y install less libicu-dev mysql-client libpq-dev libpng-dev \
+RUN apt-get update
+RUN apt-get -y install less libicu-dev default-mysql-client libpq-dev \
     libfreetype6-dev libjpeg62-turbo-dev libpng-dev libwebp-dev \
     libxpm-dev wget libmagickwand-dev vim iputils-ping net-tools
 RUN docker-php-ext-configure gd \
-        --with-freetype-dir \
-        --with-png-dir \
-        --with-jpeg-dir \
-        --with-gd \
-        --with-xpm-dir \
-        --with-webp-dir
-RUN docker-php-ext-install pdo_mysql mysqli pdo_pgsql pgsql intl gd mbstring exif
+        --with-freetype \
+        #--with-png \
+        --with-jpeg \
+        #--with-gd \
+        --with-xpm \
+        --with-webp
+RUN docker-php-ext-install pdo_mysql mysqli pdo_pgsql pgsql intl gd exif
 
 # locale
 RUN apt-get install -y locales \
@@ -21,9 +19,23 @@ RUN apt-get install -y locales \
   && echo "ja_JP Shift_JIS" >> /etc/locale.gen \
   && locale-gen
 
+#おそらく足りていないモジュール
+#gettext
+#igbinary
+#mcrypt
+#redis
+#shmop
+#sockets
+#sodium
+#sysvmsg
+#sysvsem
+#sysvshm
+#wddx
+#xsl
+
 # xdebug
-COPY ./xdebug-2.5.5/ /tmp/xdebug-2.5.5/
-RUN cd /tmp/xdebug-2.5.5/ && phpize && ./configure --enable-xdebug && make && make install
+COPY ./xdebug-3.2.2/ /tmp/xdebug-3.2.2/
+RUN cd /tmp/xdebug-3.2.2/ && phpize && ./configure --enable-xdebug && make && make install
 
 # imagick
 COPY ./imagick-3.7.0/ /tmp/imagick-3.7.0/
@@ -32,8 +44,8 @@ COPY ./imagick.ini /usr/local/etc/php/conf.d/
 
 # memcached
 RUN apt-get -y install libz-dev libmemcached-dev libmemcached11 libmemcachedutil2 build-essential
-COPY ./memcached-2.2.0/ /tmp/memcached-2.2.0/
-RUN cd /tmp/memcached-2.2.0/ && phpize && ./configure --enable-memcached && make && make install
+COPY ./memcached-3.2.0/ /tmp/memcached-3.2.0/
+RUN cd /tmp/memcached-3.2.0/ && phpize && ./configure --enable-memcached && make && make install
 RUN echo extension=memcached.so >> /usr/local/etc/php/conf.d/memcached.ini
 
 # git
@@ -61,3 +73,4 @@ RUN a2enmod ssl
 
 # php
 COPY ./php.ini /usr/local/etc/php/
+
